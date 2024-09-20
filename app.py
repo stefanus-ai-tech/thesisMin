@@ -182,39 +182,46 @@ def capture_live_packets():
     udp_flood_count = 0
 
     print('\nProcessing packets...')
-    for raw_packet in capture.sniff_continuously():
-        if stop_event.is_set():
-            logging.info("Stop event set, stopping capture.")
-            break
-        total_captured_packets += 1
-        packet_details = filter_all_udp_traffic_file(raw_packet)
-        if packet_details:
-            print(packet_details)
-            print("")
-            packet_details_list.append(packet_details)
-            if packet_details['Detection'] == 'UDP flood detected':
-                udp_flood_count += 1
+    try:
+        for raw_packet in capture.sniff_continuously():
+            if stop_event.is_set():
+                logging.info("Stop event set, stopping capture.")
+                break
+            total_captured_packets += 1
+            packet_details = filter_all_udp_traffic_file(raw_packet)
+            if packet_details:
+                print(packet_details)
+                print("")
+                packet_details_list.append(packet_details)
+                if packet_details['Detection'] == 'UDP flood detected':
+                    udp_flood_count += 1
 
-    print('Capture complete')
-    print(f'Total Captured Packets: {total_captured_packets}')
-    print(f'UDP Floods Detected: {udp_flood_count}')
-    print('Packets processed')
+        print('Capture complete')
+        print(f'Total Captured Packets: {total_captured_packets}')
+        print(f'UDP Floods Detected: {udp_flood_count}')
+        print('Packets processed')
 
-    # Save packet details to Excel
-    df = pd.DataFrame(packet_details_list)
-    excel_file_path = './udp_details_attack_email.xlsx'
-    df.to_excel(excel_file_path, index=False)
-    print(f'Data saved to {excel_file_path}')
+        # Save packet details to Excel
+        df = pd.DataFrame(packet_details_list)
+        excel_file_path = './udp_details_attack_email.xlsx'
+        df.to_excel(excel_file_path, index=False)
+        print(f'Data saved to {excel_file_path}')
 
-    # Send summary email
-    if udp_flood_count > 0:
-        subject = 'UDP Flood Summaries'
-        body = (f'Total UDP Floods Detected: {udp_flood_count} from total captured packets: {total_captured_packets}.'
-                '\nWe attach the detail in Excel format.\nTake action immediately!')
-        send_email(subject, body, attachment_path=[excel_file_path, './static/bandwidth_chart.png'])
-    else:
-        print(f'Total UDP Floods Detected: {udp_flood_count} from total captured packets: {total_captured_packets}.\nThe system is safe!')
-
+        # Send summary email
+        if udp_flood_count > 0:
+            subject = 'UDP Flood Summaries'
+            body = (f'Total UDP Floods Detected: {udp_flood_count} from total captured packets: {total_captured_packets}.'
+                    '\nWe attach the detail in Excel format.\nTake action immediately!')
+            send_email(subject, body, attachment_path=[excel_file_path, './static/bandwidth_chart.png'])
+        else:
+            print(f'Total UDP Floods Detected: {udp_flood_count} from total captured packets: {total_captured_packets}.\nThe system is safe!')
+    except Exception as e:
+        print(f"Error during capture: {e}")
+    finally:
+        capture.close()  # Ensure the capture is properly closed
+        print('Capture complete')   
+        
+        
 @app.route('/')
 def index():
     return render_template('index.html', capture_running=capture_running, history=history, packet_details_list=packet_details_list)
@@ -223,6 +230,7 @@ def index():
 def start_capture():
     global capture_thread, bandwidth_thread, capture_running, history, packet_details_list
     if not capture_running:
+        stop_event.clear()  # Reset the stop event here
         capture_running = True
         history = []
         packet_details_list = []
@@ -235,6 +243,7 @@ def start_capture():
 @app.route('/stop_capture', methods=['POST'])
 def stop_capture():
     global capture_running, capture_thread, bandwidth_thread
+    stop_event.set()
     capture_running = False
     if capture_thread is not None:
         capture_thread.join(timeout=10)  # Wait at most 10 seconds
@@ -246,7 +255,6 @@ def stop_capture():
             print("Bandwidth thread did not terminate timely.")
     plot_bandwidth_history(history)
     return redirect(url_for('index'))
-
 
 @app.route('/download_excel')
 def download_excel():
