@@ -16,7 +16,6 @@ from telegram import Bot
 from telegram.error import TelegramError
 import asyncio
 
-# added two features
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -334,12 +333,14 @@ def capture_live_packets(interface, target_ip_address):
                     f"**Total Captured Packets:** {total_captured_packets}\n"
                     "Please find the attached details and bandwidth chart.\n"
                     "Take immediate action!")
+            logging.info('Sending Telegram message...')
             send_telegram(subject, body, attachment_paths=attachment_paths)
         else:
             subject = '✅ Network Status: All Clear'
             body = (f"**Total UDP Floods Detected:** {udp_flood_count}\n"
                     f"**Total Captured Packets:** {total_captured_packets}\n"
                     "The system is safe!")
+            logging.info('Sending Telegram message...')
             send_telegram(subject, body, attachment_paths=attachment_paths)
     except Exception as e:
         logging.error(f"Error during capture: {e}")
