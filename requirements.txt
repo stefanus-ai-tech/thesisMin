@@ -1,0 +1,7 @@
+Flask
+pyshark
+pandas
+matplotlib
+psutil
+python-dotenv
+python-telegram-bot
