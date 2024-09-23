@@ -1,88 +1,117 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Network Monitoring GUI</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <h1 class="title">Network Monitoring GUI</h1>
-        <div class="capture-status">
-            {% if capture_running %}
-                <p>Capture is running...</p>
-                <div class="loader"></div>
-                <form action="{{ url_for('stop_capture') }}" method="post">
-                    <button type="submit" class="btn btn-stop">Stop Capture</button>
-                </form>
-            {% else %}
-                <p>Capture is stopped.</p>
-                <form action="{{ url_for('start_capture') }}" method="post">
-                    <button type="submit" class="btn btn-start">Start Capture</button>
-                </form>
-            {% endif %}
+      <h1 class="title">Network Monitoring GUI</h1>
+
+      <!-- Flash Messages -->
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %}
+      <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+      {% endif %} {% endwith %}
+
+      <!-- Configuration Section -->
+      <section class="configuration">
+        <h2>Configuration</h2>
+        <a href="{{ url_for('configure') }}" class="btn btn-configure">
+          <i class="fas fa-cog"></i> Configure Settings
+        </a>
+      </section>
+
+      <!-- Capture Status -->
+      <div class="capture-status">
+        {% if capture_running %}
+        <p>Capture is running...</p>
+        <div class="loader"></div>
+        <form action="{{ url_for('stop_capture') }}" method="post">
+          <button type="submit" class="btn btn-stop">Stop Capture</button>
+        </form>
+        {% else %}
+        <p>Capture is stopped.</p>
+        <form action="{{ url_for('start_capture') }}" method="post">
+          <button type="submit" class="btn btn-start">Start Capture</button>
+        </form>
+        {% endif %}
+      </div>
+
+      <!-- Bandwidth Section -->
+      <section class="bandwidth">
+        <h2>Bandwidth Usage</h2>
+        {% if not capture_running and history %}
+        <div class="chart-container">
+          <img
+            src="{{ url_for('static', filename='bandwidth_chart.png') }}"
+            alt="Bandwidth Chart"
+            class="fade-in"
+          />
         </div>
+        <a href="{{ url_for('download_plot') }}" class="btn btn-download">
+          <i class="fas fa-download"></i> Download Bandwidth Plot
+        </a>
+        {% elif not capture_running %}
+        <p>No bandwidth data available.</p>
+        {% else %}
+        <p>Bandwidth data will be displayed after stopping the capture.</p>
+        {% endif %}
+      </section>
 
-        <section class="bandwidth">
-            <h2>Bandwidth Usage</h2>
-            {% if not capture_running and history %}
-                <div class="chart-container">
-                    <img src="{{ url_for('static', filename='bandwidth_chart.png') }}" alt="Bandwidth Chart" class="fade-in">
-                </div>
-                <a href="{{ url_for('download_plot') }}" class="btn btn-download">
-                    <i class="fas fa-download"></i> Download Bandwidth Plot
-                </a>
-            {% elif not capture_running %}
-                <p>No bandwidth data available.</p>
-            {% else %}
-                <p>Bandwidth data will be displayed after stopping the capture.</p>
-            {% endif %}
-        </section>
-
-        <section class="packet-details">
-            <h2>Packet Details</h2>
-            {% if not capture_running and packet_details_list %}
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Packet Timestamp</th>
-                                <th>Protocol type</th>
-                                <th>Source address</th>
-                                <th>Source port</th>
-                                <th>Destination address</th>
-                                <th>Destination port</th>
-                                <th>OS</th>
-                                <th>Detection</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for packet in packet_details_list %}
-                            <tr class="fade-in">
-                                <td>{{ packet['Packet Timestamp'] }}</td>
-                                <td>{{ packet['Protocol type'] }}</td>
-                                <td>{{ packet['Source address'] }}</td>
-                                <td>{{ packet['Source port'] }}</td>
-                                <td>{{ packet['Destination address'] }}</td>
-                                <td>{{ packet['Destination port'] }}</td>
-                                <td>{{ packet['OS'] }}</td>
-                                <td>{{ packet['Detection'] }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                <a href="{{ url_for('download_excel') }}" class="btn btn-download">
-                    <i class="fas fa-file-excel"></i> Download Packet Details Excel
-                </a>
-            {% elif not capture_running %}
-                <p>No packet details available.</p>
-            {% else %}
-                <p>Packet details will be displayed after stopping the capture.</p>
-            {% endif %}
-        </section>
+      <!-- Packet Details Section -->
+      <section class="packet-details">
+        <h2>Packet Details</h2>
+        {% if not capture_running and packet_details_list %}
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Packet Timestamp</th>
+                <th>Protocol Type</th>
+                <th>Source Address</th>
+                <th>Source Port</th>
+                <th>Destination Address</th>
+                <th>Destination Port</th>
+                <th>OS</th>
+                <th>Detection</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for packet in packet_details_list %}
+              <tr class="fade-in">
+                <td>{{ packet['Packet Timestamp'] }}</td>
+                <td>{{ packet['Protocol type'] }}</td>
+                <td>{{ packet['Source address'] }}</td>
+                <td>{{ packet['Source port'] }}</td>
+                <td>{{ packet['Destination address'] }}</td>
+                <td>{{ packet['Destination port'] }}</td>
+                <td>{{ packet['OS'] }}</td>
+                <td>{{ packet['Detection'] }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <a href="{{ url_for('download_excel') }}" class="btn btn-download">
+          <i class="fas fa-file-excel"></i> Download Packet Details Excel
+        </a>
+        {% elif not capture_running %}
+        <p>No packet details available.</p>
+        {% else %}
+        <p>Packet details will be displayed after stopping the capture.</p>
+        {% endif %}
+      </section>
     </div>
-</body>
+  </body>
 </html>

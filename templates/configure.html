@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configure Network Monitoring</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Configure Network Monitoring</h1>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form action="{{ url_for('configure') }}" method="post" class="config-form">
+            <div class="form-group">
+                <label for="interface">Select Network Interface:</label>
+                <select name="interface" id="interface" required>
+                    <option value="" disabled selected>-- Select Interface --</option>
+                    {% for iface in interfaces %}
+                        <option value="{{ iface }}" {% if iface == current_interface %}selected{% endif %}>
+                            {{ iface }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="target_ip">Target IP for UDP Detection:</label>
+                <input type="text" id="target_ip" name="target_ip" value="{{ current_target_ip }}" required pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" title="Enter a valid IPv4 address">
+            </div>
+            <button type="submit" class="btn btn-submit"><i class="fas fa-save"></i> Save Configuration</button>
+        </form>
+
+        <a href="{{ url_for('index') }}" class="btn btn-back">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</body>
+</html>

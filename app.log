@@ -1,0 +1,174 @@
+2024-09-24 00:34:08,738 INFO:TelegramSender initialized and event loop running in separate thread.
+2024-09-24 00:34:08,749 INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-09-24 00:34:08,750 INFO:[33mPress CTRL+C to quit[0m
+2024-09-24 00:34:08,750 INFO: * Restarting with stat
+2024-09-24 00:34:09,634 INFO:TelegramSender initialized and event loop running in separate thread.
+2024-09-24 00:34:09,642 WARNING: * Debugger is active!
+2024-09-24 00:34:09,642 INFO: * Debugger PIN: 119-881-287
+2024-09-24 00:36:58,054 INFO: * Detected change in '/home/adri/Documents/thesisMin/app.py', reloading
+2024-09-24 00:36:58,057 INFO:TelegramSender closed and event loop stopped.
+2024-09-24 00:36:58,219 INFO: * Restarting with stat
+2024-09-24 00:36:59,089 INFO:TelegramSender initialized and event loop running in separate thread.
+2024-09-24 00:36:59,097 WARNING: * Debugger is active!
+2024-09-24 00:36:59,097 INFO: * Debugger PIN: 119-881-287
+2024-09-24 00:37:01,639 INFO:TelegramSender closed and event loop stopped.
+2024-09-24 00:37:01,802 INFO:TelegramSender closed and event loop stopped.
+2024-09-24 00:37:03,659 INFO:TelegramSender initialized and event loop running in separate thread.
+2024-09-24 00:37:03,670 INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-09-24 00:37:03,671 INFO:[33mPress CTRL+C to quit[0m
+2024-09-24 00:37:03,671 INFO: * Restarting with stat
+2024-09-24 00:37:04,499 INFO:TelegramSender initialized and event loop running in separate thread.
+2024-09-24 00:37:04,509 WARNING: * Debugger is active!
+2024-09-24 00:37:04,509 INFO: * Debugger PIN: 119-881-287
+2024-09-24 00:38:00,820 INFO: * Detected change in '/home/adri/Documents/thesisMin/app.py', reloading
+2024-09-24 00:38:00,823 INFO:TelegramSender closed and event loop stopped.
+2024-09-24 00:38:00,963 INFO: * Restarting with stat
+2024-09-24 00:38:01,784 ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x7f0571e6cf10>
+2024-09-24 00:38:01,784 INFO:TelegramSender initialized and event loop running in separate thread.
+2024-09-24 00:38:01,792 WARNING: * Debugger is active!
+2024-09-24 00:38:01,793 INFO: * Debugger PIN: 119-881-287
+2024-09-24 00:38:05,211 INFO:TelegramSender closed and event loop stopped.
+2024-09-24 00:38:05,373 INFO:TelegramSender closed and event loop stopped.
+2024-09-24 00:38:07,864 ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x7f941cdea890>
+2024-09-24 00:38:07,864 INFO:TelegramSender initialized and event loop running in separate thread.
+2024-09-24 00:38:07,876 INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-09-24 00:38:07,876 INFO:[33mPress CTRL+C to quit[0m
+2024-09-24 00:38:07,877 INFO: * Restarting with stat
+2024-09-24 00:38:08,662 ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x7f4d9af10f10>
+2024-09-24 00:38:08,663 INFO:TelegramSender initialized and event loop running in separate thread.
+2024-09-24 00:38:08,671 WARNING: * Debugger is active!
+2024-09-24 00:38:08,671 INFO: * Debugger PIN: 119-881-287
+2024-09-24 00:39:01,408 INFO: * Detected change in '/home/adri/Documents/thesisMin/app.py', reloading
+2024-09-24 00:39:01,410 INFO:TelegramSender closed and event loop stopped.
+2024-09-24 00:39:01,545 INFO: * Restarting with stat
+2024-09-24 00:39:02,351 ERROR:Unclosed client session
+client_session: <aiohttp.client.ClientSession object at 0x7fc6f196ccd0>
+2024-09-24 00:39:02,351 INFO:TelegramSender initialized and event loop running in separate thread.
+2024-09-24 00:39:02,359 WARNING: * Debugger is active!
+2024-09-24 00:39:02,359 INFO: * Debugger PIN: 119-881-287
+2024-09-24 00:39:32,340 INFO: * Detected change in '/home/adri/Documents/thesisMin/app.py', reloading
+2024-09-24 00:39:32,343 INFO:TelegramSender closed and event loop stopped.
+2024-09-24 00:39:32,504 INFO: * Restarting with stat
+2024-09-24 00:39:33,277 INFO:TelegramSender initialized and event loop running in separate thread.
+2024-09-24 00:39:33,285 WARNING: * Debugger is active!
+2024-09-24 00:39:33,285 INFO: * Debugger PIN: 119-881-287
+2024-09-24 00:39:33,350 INFO:Bot instance created successfully.
+2024-09-24 00:39:44,904 INFO:Starting packet capture...
+2024-09-24 00:39:44,904 INFO:Capturing Bandwidth History...
+2024-09-24 00:39:44,905 INFO:127.0.0.1 - - [24/Sep/2024 00:39:44] "[32mPOST /start_capture HTTP/1.1[0m" 302 -
+2024-09-24 00:39:44,916 INFO:127.0.0.1 - - [24/Sep/2024 00:39:44] "GET / HTTP/1.1" 200 -
+2024-09-24 00:39:44,936 INFO:127.0.0.1 - - [24/Sep/2024 00:39:44] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2024-09-24 00:39:45,054 INFO:Processing packets...
+2024-09-24 00:40:17,191 INFO:TelegramSender closed and event loop stopped.
+2024-09-24 00:40:17,353 INFO:TelegramSender closed and event loop stopped.
+2024-09-24 00:40:37,974 INFO:TelegramSender initialized and event loop running in separate thread.
+2024-09-24 00:40:37,985 INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-09-24 00:40:37,986 INFO:[33mPress CTRL+C to quit[0m
+2024-09-24 00:40:37,986 INFO: * Restarting with stat
+2024-09-24 00:40:38,045 INFO:Bot instance created successfully.
+2024-09-24 00:40:38,735 INFO:TelegramSender initialized and event loop running in separate thread.
+2024-09-24 00:40:38,743 WARNING: * Debugger is active!
+2024-09-24 00:40:38,743 INFO: * Debugger PIN: 119-881-287
+2024-09-24 00:40:38,805 INFO:Bot instance created successfully.
+2024-09-24 00:40:45,280 WARNING:Not enough data to plot.
+2024-09-24 00:40:45,280 INFO:127.0.0.1 - - [24/Sep/2024 00:40:45] "[32mPOST /stop_capture HTTP/1.1[0m" 302 -
+2024-09-24 00:40:45,290 INFO:127.0.0.1 - - [24/Sep/2024 00:40:45] "GET / HTTP/1.1" 200 -
+2024-09-24 00:40:45,304 INFO:127.0.0.1 - - [24/Sep/2024 00:40:45] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2024-09-24 00:40:46,705 INFO:Starting packet capture...
+2024-09-24 00:40:46,705 INFO:Capturing Bandwidth History...
+2024-09-24 00:40:46,706 INFO:127.0.0.1 - - [24/Sep/2024 00:40:46] "[32mPOST /start_capture HTTP/1.1[0m" 302 -
+2024-09-24 00:40:46,709 INFO:127.0.0.1 - - [24/Sep/2024 00:40:46] "GET / HTTP/1.1" 200 -
+2024-09-24 00:40:46,726 INFO:127.0.0.1 - - [24/Sep/2024 00:40:46] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2024-09-24 00:40:46,843 INFO:Processing packets...
+2024-09-24 00:40:56,714 INFO:Bandwidth History Capture Stopped!
+2024-09-24 00:41:03,972 WARNING:Capture thread did not terminate timely.
+2024-09-24 00:41:03,972 INFO:Plotting Bandwidth History...
+2024-09-24 00:41:03,989 INFO:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-09-24 00:41:03,990 INFO:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-09-24 00:41:04,096 INFO:Bandwidth History Plotting Complete!
+2024-09-24 00:41:04,097 INFO:127.0.0.1 - - [24/Sep/2024 00:41:04] "[32mPOST /stop_capture HTTP/1.1[0m" 302 -
+2024-09-24 00:41:04,912 WARNING:Capture thread did not terminate timely.
+2024-09-24 00:41:04,912 INFO:Plotting Bandwidth History...
+2024-09-24 00:41:04,922 INFO:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-09-24 00:41:04,923 INFO:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-09-24 00:41:05,008 INFO:Bandwidth History Plotting Complete!
+2024-09-24 00:41:05,009 INFO:127.0.0.1 - - [24/Sep/2024 00:41:05] "[32mPOST /stop_capture HTTP/1.1[0m" 302 -
+2024-09-24 00:41:05,481 WARNING:Capture thread did not terminate timely.
+2024-09-24 00:41:05,481 INFO:Plotting Bandwidth History...
+2024-09-24 00:41:05,490 INFO:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-09-24 00:41:05,491 INFO:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-09-24 00:41:05,575 INFO:Bandwidth History Plotting Complete!
+2024-09-24 00:41:05,576 INFO:127.0.0.1 - - [24/Sep/2024 00:41:05] "[32mPOST /stop_capture HTTP/1.1[0m" 302 -
+2024-09-24 00:41:06,139 WARNING:Capture thread did not terminate timely.
+2024-09-24 00:41:06,139 INFO:Plotting Bandwidth History...
+2024-09-24 00:41:06,148 INFO:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-09-24 00:41:06,149 INFO:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-09-24 00:41:06,233 INFO:Bandwidth History Plotting Complete!
+2024-09-24 00:41:06,233 INFO:127.0.0.1 - - [24/Sep/2024 00:41:06] "[32mPOST /stop_capture HTTP/1.1[0m" 302 -
+2024-09-24 00:41:06,417 WARNING:Capture thread did not terminate timely.
+2024-09-24 00:41:06,417 INFO:Plotting Bandwidth History...
+2024-09-24 00:41:06,427 INFO:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-09-24 00:41:06,428 INFO:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-09-24 00:41:06,551 INFO:Bandwidth History Plotting Complete!
+2024-09-24 00:41:06,551 INFO:127.0.0.1 - - [24/Sep/2024 00:41:06] "[32mPOST /stop_capture HTTP/1.1[0m" 302 -
+2024-09-24 00:41:06,554 INFO:127.0.0.1 - - [24/Sep/2024 00:41:06] "GET / HTTP/1.1" 200 -
+2024-09-24 00:41:06,572 INFO:127.0.0.1 - - [24/Sep/2024 00:41:06] "GET /static/bandwidth_chart.png HTTP/1.1" 200 -
+2024-09-24 00:41:06,572 INFO:127.0.0.1 - - [24/Sep/2024 00:41:06] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2024-09-24 00:41:51,675 INFO:TelegramSender closed and event loop stopped.
+2024-09-24 00:41:51,837 INFO:TelegramSender closed and event loop stopped.
+2024-09-24 00:41:51,902 ERROR:Task was destroyed but it is pending!
+task: <Task pending name='Task-2' coro=<Bot.close() running at /home/adri/.local/lib/python3.10/site-packages/telegram/_bot.py:7616> cb=[_chain_future.<locals>._call_set_state() at /usr/lib/python3.10/asyncio/futures.py:392]>
+2024-09-24 00:43:17,425 INFO:TelegramSender initialized and event loop running in separate thread.
+2024-09-24 00:43:17,437 INFO:[31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2024-09-24 00:43:17,437 INFO:[33mPress CTRL+C to quit[0m
+2024-09-24 00:43:17,438 INFO: * Restarting with stat
+2024-09-24 00:43:17,496 INFO:Bot instance created successfully.
+2024-09-24 00:43:18,189 INFO:TelegramSender initialized and event loop running in separate thread.
+2024-09-24 00:43:18,196 WARNING: * Debugger is active!
+2024-09-24 00:43:18,197 INFO: * Debugger PIN: 119-881-287
+2024-09-24 00:43:18,259 INFO:Bot instance created successfully.
+2024-09-24 00:43:24,424 INFO:Starting packet capture...
+2024-09-24 00:43:24,424 INFO:Capturing Bandwidth History...
+2024-09-24 00:43:24,425 INFO:127.0.0.1 - - [24/Sep/2024 00:43:24] "[32mPOST /start_capture HTTP/1.1[0m" 302 -
+2024-09-24 00:43:24,437 INFO:127.0.0.1 - - [24/Sep/2024 00:43:24] "GET / HTTP/1.1" 200 -
+2024-09-24 00:43:24,464 INFO:127.0.0.1 - - [24/Sep/2024 00:43:24] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2024-09-24 00:43:24,586 INFO:Processing packets...
+2024-09-24 00:43:39,232 INFO:{'Packet Timestamp': datetime.datetime(2024, 9, 24, 0, 43, 38, 481962), 'Protocol type': 'UDP', 'Source address': '162.159.200.123', 'Source port': '123', 'Source port name': 'NTP', 'Destination address': '192.168.100.172', 'Destination port': '54133', 'Destination port name': 'Unknown', 'TTL/Hop Limit': '248', 'OS': 'Solaris/AIX', 'Packet Size': 90, 'Payload Size': 82, 'Detection': 'Not UDP flood'}
+2024-09-24 00:44:24,473 INFO:Bandwidth History Capture Stopped!
+2024-09-24 00:44:33,689 WARNING:Capture thread did not terminate timely.
+2024-09-24 00:44:33,690 INFO:Plotting Bandwidth History...
+2024-09-24 00:44:33,706 INFO:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-09-24 00:44:33,707 INFO:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-09-24 00:44:33,833 INFO:Bandwidth History Plotting Complete!
+2024-09-24 00:44:33,833 INFO:127.0.0.1 - - [24/Sep/2024 00:44:33] "[32mPOST /stop_capture HTTP/1.1[0m" 302 -
+2024-09-24 00:44:33,836 INFO:127.0.0.1 - - [24/Sep/2024 00:44:33] "GET / HTTP/1.1" 200 -
+2024-09-24 00:44:33,853 INFO:127.0.0.1 - - [24/Sep/2024 00:44:33] "[36mGET /static/styles.css HTTP/1.1[0m" 304 -
+2024-09-24 00:44:33,853 INFO:127.0.0.1 - - [24/Sep/2024 00:44:33] "GET /static/bandwidth_chart.png HTTP/1.1" 200 -
+2024-09-24 00:44:39,014 INFO:Stop event set, stopping capture.
+2024-09-24 00:44:39,021 INFO:Capture complete
+2024-09-24 00:44:39,021 INFO:Total Captured Packets: 1
+2024-09-24 00:44:39,021 INFO:UDP Floods Detected: 0
+2024-09-24 00:44:39,021 INFO:Packets processed
+2024-09-24 00:44:39,143 INFO:Data saved to ./udp_details_attack_telegram.xlsx
+2024-09-24 00:44:39,143 INFO:Plotting Bandwidth History...
+2024-09-24 00:44:39,152 INFO:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-09-24 00:44:39,153 INFO:Using categorical units to plot a list of strings that are all parsable as floats or dates. If these strings should be plotted as numbers, cast to the appropriate data type before plotting.
+2024-09-24 00:44:39,271 INFO:Bandwidth History Plotting Complete!
+2024-09-24 00:44:39,314 INFO:Capture complete
+2024-09-24 00:44:40,070 INFO:HTTP Request: POST https://api.telegram.org/bot7684066526:AAG-uOYi7_WczzhSpiyjDw_9w5_LEOc364E/sendMessage "HTTP/1.1 200 OK"
+2024-09-24 00:44:40,071 INFO:Telegram message sent successfully!
+2024-09-24 00:45:45,891 INFO: * Detected change in '/home/adri/Documents/thesisMin/app.py', reloading
+2024-09-24 00:45:45,893 INFO:TelegramSender closed and event loop stopped.
+2024-09-24 00:45:46,092 INFO: * Restarting with stat
+2024-09-24 00:45:54,638 INFO: * Restarting with stat
+2024-09-24 00:45:54,710 INFO:TelegramSender closed and event loop stopped.
+2024-09-24 00:45:54,786 ERROR:Task was destroyed but it is pending!
+task: <Task pending name='Task-2' coro=<Bot.close() running at /home/adri/.local/lib/python3.10/site-packages/telegram/_bot.py:7616> cb=[_chain_future.<locals>._call_set_state() at /usr/lib/python3.10/asyncio/futures.py:392]>

@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, send_file
+from flask import Flask, render_template, request, redirect, url_for, send_file, flash
 import threading
 import time
 import os
@@ -9,12 +9,14 @@ matplotlib.use('Agg')  # Use Agg backend which does not require a GUI
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 import psutil
+import socket  # Added import for socket.AF_INET
 import logging
 from dotenv import load_dotenv
 from telegram import Bot
 from telegram.error import TelegramError
-import asyncio  # Added import
+import asyncio
 
+# Configure logging
 logging.basicConfig(level=logging.INFO)
 
 # Load environment variables from .env file
@@ -30,7 +32,9 @@ if not BOT_TOKEN or not CHAT_ID:
 # Initialize the Telegram bot
 bot = Bot(token=BOT_TOKEN)
 
+# Initialize Flask app
 app = Flask(__name__)
+app.secret_key = os.urandom(24)  # Needed for flashing messages
 
 # Use an Event for better thread management
 stop_event = threading.Event()
@@ -64,6 +68,11 @@ port_number_mapping = {
     1812: 'RADIUS Authentication',
     1813: 'RADIUS Accounting',
 }
+
+# Lock for thread-safe operations on settings
+settings_lock = threading.Lock()
+selected_interface = None
+target_ip = None
 
 def send_telegram(subject, body, attachment_paths=None):
     """
@@ -132,6 +141,10 @@ def classify_os(ttl, layer_type='ip'):
 def classify_protocol(packet):
     global last_udp_packet_time, udp_packet_count
     protocol_type = packet.transport_layer
+
+    with settings_lock:
+        current_target_ip = target_ip
+
     # Determine the destination IP based on available layer
     if 'IP' in packet:
         dest_ip = packet.ip.dst
@@ -143,7 +156,7 @@ def classify_protocol(packet):
         dest_ip = None
         layer_type = None
 
-    if protocol_type == 'UDP' and dest_ip == '192.168.43.135':
+    if protocol_type == 'UDP' and dest_ip == current_target_ip:
         current_time = datetime.now()
         time_difference = current_time - last_udp_packet_time
 
@@ -193,7 +206,7 @@ def get_packet_details(packet):
         source_port = packet[packet.transport_layer].srcport
         destination_port = packet[packet.transport_layer].dstport
         packet_time = packet.sniff_time
-        os = classify_os(ttl, layer_type=layer_type)
+        os_class = classify_os(ttl, layer_type=layer_type)
         protocol = classify_protocol(packet)
 
         udpFlood = 'Not UDP flood'
@@ -215,7 +228,7 @@ def get_packet_details(packet):
             'Destination port': destination_port,
             'Destination port name': destination_port_name,
             'TTL/Hop Limit': ttl,
-            'OS': os,
+            'OS': os_class,
             'Packet Size': udp_packet_size,
             'Payload Size': udp_payload_size,
             'Detection': udpFlood
@@ -237,7 +250,8 @@ def capture_bandwidth_history():
     history = []
     logging.info('Capturing Bandwidth History...')
     while not stop_event.is_set():
-        net_usage = psutil.net_io_counters().bytes_sent + psutil.net_io_counters().bytes_recv
+        net_io = psutil.net_io_counters()
+        net_usage = net_io.bytes_sent + net_io.bytes_recv
         history.append((datetime.now(), net_usage))
         time.sleep(5)  # Short sleep interval for responsive stopping
     logging.info('Bandwidth History Capture Stopped!')
@@ -271,11 +285,12 @@ def plot_bandwidth_history(history):
     plt.close()
     logging.info('Bandwidth History Plotting Complete!')
 
-def capture_live_packets():
+def capture_live_packets(interface, target_ip_address):
     global packet_details_list
-    logging.info("Starting packet capture...")
-    # Add a BPF filter to capture only UDP over IPv4 and IPv6
-    capture = pyshark.LiveCapture(interface='eno1', bpf_filter='udp and (ip or ip6)')
+    logging.info(f"Starting packet capture on interface: {interface}, target IP: {target_ip_address}")
+    # Add a BPF filter to capture only UDP over IPv4 and IPv6 targeting the specified IP
+    bpf_filter = f"udp and (ip or ip6) and dst host {target_ip_address}"
+    capture = pyshark.LiveCapture(interface=interface, bpf_filter=bpf_filter)
     total_captured_packets = 0
     udp_flood_count = 0
 
@@ -328,40 +343,117 @@ def capture_live_packets():
         logging.error(f"Error during capture: {e}")
     finally:
         capture.close()  # Ensure the capture is properly closed
-        logging.info('Capture complete')   
+        logging.info('Capture complete')
+
+def get_default_private_ip():
+    """Retrieve the default private IP address of the machine."""
+    addrs = psutil.net_if_addrs()
+    for iface, addr_list in addrs.items():
+        for addr in addr_list:
+            if addr.family == socket.AF_INET and not addr.address.startswith('127.'):
+                return addr.address
+    return '127.0.0.1'
+
+def get_network_interfaces():
+    """
+    Retrieves a list of available network interfaces on the machine.
+    
+    :return: A list of interface names.
+    """
+    return list(psutil.net_if_addrs().keys())
 
 @app.route('/')
 def index():
-    return render_template('index.html', capture_running=capture_running, history=history, packet_details_list=packet_details_list)
+    available_interfaces = get_network_interfaces()
+    
+    with settings_lock:
+        current_interface = selected_interface
+        current_target_ip = target_ip or get_default_private_ip()
+
+    return render_template('index.html',
+                           capture_running=capture_running,
+                           history=history,
+                           packet_details_list=packet_details_list,
+                           interfaces=available_interfaces,
+                           current_interface=current_interface,
+                           current_target_ip=current_target_ip)
+
+@app.route('/configure', methods=['GET', 'POST'])
+def configure():
+    available_interfaces = get_network_interfaces()
+    
+    if request.method == 'POST':
+        selected = request.form.get('interface')
+        target = request.form.get('target_ip')
+        
+        if not selected:
+            flash('Please select a network interface.', 'error')
+            return redirect(url_for('configure'))
+        
+        if not target:
+            flash('Please enter a target IP address.', 'error')
+            return redirect(url_for('configure'))
+        
+        with settings_lock:
+            global selected_interface, target_ip
+            selected_interface = selected
+            target_ip = target
+
+        flash('Configuration updated successfully!', 'success')
+        return redirect(url_for('index'))
+    
+    with settings_lock:
+        current_interface = selected_interface
+        current_target_ip = target_ip or get_default_private_ip()
+    
+    return render_template('configure.html',
+                           interfaces=available_interfaces,
+                           current_interface=current_interface,
+                           current_target_ip=current_target_ip)
 
 @app.route('/start_capture', methods=['POST'])
 def start_capture():
     global capture_thread, bandwidth_thread, capture_running, history, packet_details_list
+    with settings_lock:
+        interface = selected_interface
+        ip = target_ip
+
+    if not interface or not ip:
+        flash('Please configure the interface and target IP before starting capture.', 'error')
+        return redirect(url_for('configure'))
+
     if not capture_running:
         stop_event.clear()  # Reset the stop event here
         capture_running = True
         history = []
         packet_details_list = []
-        capture_thread = threading.Thread(target=capture_live_packets)
+        capture_thread = threading.Thread(target=capture_live_packets, args=(interface, ip))
         bandwidth_thread = threading.Thread(target=capture_bandwidth_history)
         capture_thread.start()
         bandwidth_thread.start()
+        flash('Packet capture started.', 'success')
+    else:
+        flash('Capture is already running.', 'info')
     return redirect(url_for('index'))
 
 @app.route('/stop_capture', methods=['POST'])
 def stop_capture():
     global capture_running, capture_thread, bandwidth_thread
-    stop_event.set()
-    capture_running = False
-    if capture_thread is not None:
-        capture_thread.join(timeout=10)  # Wait at most 10 seconds
-        if capture_thread.is_alive():
-            logging.warning("Capture thread did not terminate timely.")
-    if bandwidth_thread is not None:
-        bandwidth_thread.join(timeout=10)  # Wait at most 10 seconds
-        if bandwidth_thread.is_alive():
-            logging.warning("Bandwidth thread did not terminate timely.")
-    plot_bandwidth_history(history)
+    if capture_running:
+        stop_event.set()
+        capture_running = False
+        if capture_thread is not None:
+            capture_thread.join(timeout=10)  # Wait at most 10 seconds
+            if capture_thread.is_alive():
+                logging.warning("Capture thread did not terminate timely.")
+        if bandwidth_thread is not None:
+            bandwidth_thread.join(timeout=10)  # Wait at most 10 seconds
+            if bandwidth_thread.is_alive():
+                logging.warning("Bandwidth thread did not terminate timely.")
+        plot_bandwidth_history(history)
+        flash('Packet capture stopped.', 'success')
+    else:
+        flash('Capture is not running.', 'info')
     return redirect(url_for('index'))
 
 @app.route('/download_excel')
@@ -370,7 +462,8 @@ def download_excel():
     if os.path.exists(excel_file_path):
         return send_file(excel_file_path, as_attachment=True)
     else:
-        return "No Excel file available."
+        flash("No Excel file available.", 'error')
+        return redirect(url_for('index'))
 
 @app.route('/download_plot')
 def download_plot():
@@ -378,7 +471,8 @@ def download_plot():
     if os.path.exists(plot_file_path):
         return send_file(plot_file_path, as_attachment=True)
     else:
-        return "No plot available."
+        flash("No plot available.", 'error')
+        return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)
