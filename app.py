@@ -16,7 +16,7 @@ from telegram import Bot
 from telegram.error import TelegramError
 import asyncio
 
-#added two features
+# added two features
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
