@@ -8,11 +8,27 @@ import matplotlib
 matplotlib.use('Agg')  # Use Agg backend which does not require a GUI
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
-import smtplib
-from email.mime.text import MIMEText
 import psutil
 import logging
+from dotenv import load_dotenv
+from telegram import Bot
+from telegram.error import TelegramError
+import asyncio  # Added import
+
 logging.basicConfig(level=logging.INFO)
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Telegram bot configuration
+BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")  # Ensure this is set in your .env file
+CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")      # Ensure this is set in your .env file
+
+if not BOT_TOKEN or not CHAT_ID:
+    raise ValueError("TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID must be set in the .env file.")
+
+# Initialize the Telegram bot
+bot = Bot(token=BOT_TOKEN)
 
 app = Flask(__name__)
 
@@ -49,39 +65,83 @@ port_number_mapping = {
     1813: 'RADIUS Accounting',
 }
 
-sender_email = 'stefanusaitech@gmail.com'
-receiver_email = 'stefanusadriirawan@gmail.com'
-app_password = 'your_app_password'
+def send_telegram(subject, body, attachment_paths=None):
+    """
+    Sends a message and optional attachments to a specified Telegram chat.
+    
+    :param subject: Subject of the message.
+    :param body: Body text of the message.
+    :param attachment_paths: List of file paths to send as attachments.
+    """
+    async def send():
+        logging.info("Executing send coroutine...")
+        try:
+            full_message = f"📢 *{subject}*\n\n{body}"
+            await bot.send_message(chat_id=CHAT_ID, text=full_message, parse_mode='Markdown')
+            logging.info("Telegram message sent successfully!")
 
-def send_email(subject, body, attachment_path=None):
-    message = MIMEText(body)
-    message['From'] = sender_email
-    message['To'] = receiver_email
-    message['Subject'] = subject
-
+            if attachment_paths:
+                for file_path in attachment_paths:
+                    if os.path.exists(file_path):
+                        with open(file_path, 'rb') as file:
+                            await bot.send_document(chat_id=CHAT_ID, document=file)
+                            logging.info(f"Sent attachment: {file_path}")
+                    else:
+                        logging.warning(f"Attachment file not found: {file_path}")
+        except TelegramError as e:
+            logging.error(f"Failed to send Telegram message: {e}")
+    
+    # Execute the asynchronous send function
     try:
-        with smtplib.SMTP('internal.smtp.server.com', 25) as server:  # Use the internal SMTP server that doesn't require authentication
-            server.sendmail(sender_email, receiver_email, message.as_string())
-            print("Email sent successfully without authentication!")
-    except Exception as e:
-        print(f"Failed to send email: {e}")
+        # Create a new event loop for this thread
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(send())
+    except RuntimeError as e:
+        # Handle the case where an event loop is already running
+        logging.error(f"Asyncio run failed: {e}")
+    finally:
+        loop.close()
 
-def classify_os(ttl):
-    # Classify the operating system based on TTL value ranges
+def classify_os(ttl, layer_type='ip'):
+    """
+    Classify the operating system based on TTL value ranges.
+    
+    :param ttl: TTL value.
+    :param layer_type: Type of IP layer ('ip' or 'ipv6').
+    :return: OS classification.
+    """
     ttl_value = int(ttl)
-    if 0 <= ttl_value <= 64:
-        return 'Linux'
-    elif 65 <= ttl_value <= 128:
-        return 'Windows'
-    elif 129 <= ttl_value <= 254:
-        return 'Solaris/AIX'
-    else:
-        return 'Unknown'
+    if layer_type == 'ip':
+        if 0 <= ttl_value <= 64:
+            return 'Linux'
+        elif 65 <= ttl_value <= 128:
+            return 'Windows'
+        elif 129 <= ttl_value <= 254:
+            return 'Solaris/AIX'
+    elif layer_type == 'ipv6':
+        # TTL equivalent in IPv6 is Hop Limit
+        if 0 <= ttl_value <= 64:
+            return 'Linux'
+        elif 65 <= ttl_value <= 128:
+            return 'Windows'
+        elif 129 <= ttl_value <= 254:
+            return 'Solaris/AIX'
+    return 'Unknown'
 
 def classify_protocol(packet):
     global last_udp_packet_time, udp_packet_count
     protocol_type = packet.transport_layer
-    dest_ip = packet.ip.dst if hasattr(packet, 'ip') and hasattr(packet.ip, 'dst') else None
+    # Determine the destination IP based on available layer
+    if 'IP' in packet:
+        dest_ip = packet.ip.dst
+        layer_type = 'ip'
+    elif 'IPv6' in packet:
+        dest_ip = packet.ipv6.dst
+        layer_type = 'ipv6'
+    else:
+        dest_ip = None
+        layer_type = None
 
     if protocol_type == 'UDP' and dest_ip == '192.168.43.135':
         current_time = datetime.now()
@@ -104,65 +164,101 @@ def classify_port(port):
     return port_number_mapping.get(int(port), 'Unknown')
 
 def get_packet_details(packet):
-    protocol_type = packet.transport_layer
-    source_address = packet.ip.src
-    source_port = packet[packet.transport_layer].srcport
-    destination_address = packet.ip.dst
-    destination_port = packet[packet.transport_layer].dstport
-    packet_time = packet.sniff_time
-    ttl = packet.ip.ttl
-    os = classify_os(ttl)
-    protocol = classify_protocol(packet)
+    """
+    Extracts relevant details from a packet.
+    
+    Handles both IPv4 and IPv6 packets.
+    
+    :param packet: The captured packet.
+    :return: A dictionary of packet details or None if required layers are missing.
+    """
+    try:
+        protocol_type = packet.transport_layer
 
-    udpFlood = 'Not UDP flood'
-    if protocol == 'UDP flood':
-        udpFlood = 'UDP flood detected'
+        # Determine if packet has IPv4 or IPv6
+        if 'IP' in packet:
+            source_address = packet.ip.src
+            destination_address = packet.ip.dst
+            ttl = packet.ip.ttl
+            layer_type = 'ip'
+        elif 'IPv6' in packet:
+            source_address = packet.ipv6.src
+            destination_address = packet.ipv6.dst
+            ttl = packet.ipv6.hlim  # Hop Limit in IPv6 is equivalent to TTL
+            layer_type = 'ipv6'
+        else:
+            logging.warning("Packet does not have IP or IPv6 layer. Skipping.")
+            return None  # Skip packets without IP layers
 
-    source_port_name = classify_port(source_port)
-    destination_port_name = classify_port(destination_port)
-    udp_packet_size = len(packet)
-    udp_payload_size = int(packet.length) - 8 if hasattr(packet, 'length') else 0
+        source_port = packet[packet.transport_layer].srcport
+        destination_port = packet[packet.transport_layer].dstport
+        packet_time = packet.sniff_time
+        os = classify_os(ttl, layer_type=layer_type)
+        protocol = classify_protocol(packet)
 
-    return {
-        'Packet Timestamp': packet_time,
-        'Protocol type': protocol_type,
-        'Source address': source_address,
-        'Source port': source_port,
-        'Source port name': source_port_name,
-        'Destination address': destination_address,
-        'Destination port': destination_port,
-        'Destination port name': destination_port_name,
-        'TTL': ttl,
-        'OS': os,
-        'Packet Size': udp_packet_size,
-        'Payload Size': udp_payload_size,
-        'Detection': udpFlood
-    }
+        udpFlood = 'Not UDP flood'
+        if protocol == 'UDP flood':
+            udpFlood = 'UDP flood detected'
+
+        source_port_name = classify_port(source_port)
+        destination_port_name = classify_port(destination_port)
+        udp_packet_size = len(packet)
+        udp_payload_size = int(packet.length) - 8 if hasattr(packet, 'length') else 0
+
+        return {
+            'Packet Timestamp': packet_time,
+            'Protocol type': protocol_type,
+            'Source address': source_address,
+            'Source port': source_port,
+            'Source port name': source_port_name,
+            'Destination address': destination_address,
+            'Destination port': destination_port,
+            'Destination port name': destination_port_name,
+            'TTL/Hop Limit': ttl,
+            'OS': os,
+            'Packet Size': udp_packet_size,
+            'Payload Size': udp_payload_size,
+            'Detection': udpFlood
+        }
+    except AttributeError as e:
+        logging.error(f"Attribute error while processing packet: {e}")
+        return None
+    except Exception as e:
+        logging.error(f"Unexpected error while processing packet: {e}")
+        return None
 
 def filter_all_udp_traffic_file(packet):
     if hasattr(packet, 'udp'):
         return get_packet_details(packet)
+    return None
 
 def capture_bandwidth_history():
     global history
     history = []
-    print('Capturing Bandwidth History...')
+    logging.info('Capturing Bandwidth History...')
     while not stop_event.is_set():
         net_usage = psutil.net_io_counters().bytes_sent + psutil.net_io_counters().bytes_recv
         history.append((datetime.now(), net_usage))
         time.sleep(5)  # Short sleep interval for responsive stopping
-    print('Bandwidth History Capture Stopped!')
+    logging.info('Bandwidth History Capture Stopped!')
 
 def plot_bandwidth_history(history):
     if len(history) < 2:
-        print('Not enough data to plot.')
+        logging.warning('Not enough data to plot.')
         return
     timestamps, net_usage = zip(*history)
-    data_rate_kBps = [(net_usage[i] - net_usage[i - 1]) / 1024 / (timestamps[i] - timestamps[i - 1]).total_seconds()
-                      for i in range(1, len(timestamps))]
+    
+    # Convert to datetime if not already
+    if isinstance(timestamps[0], str):
+        timestamps = [datetime.strptime(t, '%Y-%m-%d %H:%M:%S') for t in timestamps]
+    
+    data_rate_kBps = [
+        (net_usage[i] - net_usage[i - 1]) / 1024 / (timestamps[i] - timestamps[i - 1]).total_seconds()
+        for i in range(1, len(timestamps))
+    ]
     plot_timestamps = [t.strftime('%H:%M:%S') for t in timestamps[1:]]
-
-    print('Plotting Bandwidth History...')
+    
+    logging.info('Plotting Bandwidth History...')
     plt.figure(figsize=(10, 6))
     plt.plot(plot_timestamps, data_rate_kBps, marker='o', linestyle='-', color='#7a6f6f')  # Pastel color
     plt.title('Network Bandwidth Usage Over Time')
@@ -170,18 +266,20 @@ def plot_bandwidth_history(history):
     plt.ylabel('Data Transfer Rate (kB/s)')
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.savefig('./static/bandwidth_chart.png')
+    plot_file_path = './static/bandwidth_chart.png'
+    plt.savefig(plot_file_path)
     plt.close()
-    print('Bandwidth History Plotting Complete!')
+    logging.info('Bandwidth History Plotting Complete!')
 
 def capture_live_packets():
     global packet_details_list
     logging.info("Starting packet capture...")
-    capture = pyshark.LiveCapture(interface='wlan0')  # Adjust the interface as needed
+    # Add a BPF filter to capture only UDP over IPv4 and IPv6
+    capture = pyshark.LiveCapture(interface='eno1', bpf_filter='udp and (ip or ip6)')
     total_captured_packets = 0
     udp_flood_count = 0
 
-    print('\nProcessing packets...')
+    logging.info('Processing packets...')
     try:
         for raw_packet in capture.sniff_continuously():
             if stop_event.is_set():
@@ -190,38 +288,48 @@ def capture_live_packets():
             total_captured_packets += 1
             packet_details = filter_all_udp_traffic_file(raw_packet)
             if packet_details:
-                print(packet_details)
-                print("")
+                logging.info(packet_details)
                 packet_details_list.append(packet_details)
                 if packet_details['Detection'] == 'UDP flood detected':
                     udp_flood_count += 1
 
-        print('Capture complete')
-        print(f'Total Captured Packets: {total_captured_packets}')
-        print(f'UDP Floods Detected: {udp_flood_count}')
-        print('Packets processed')
+        logging.info('Capture complete')
+        logging.info(f'Total Captured Packets: {total_captured_packets}')
+        logging.info(f'UDP Floods Detected: {udp_flood_count}')
+        logging.info('Packets processed')
 
         # Save packet details to Excel
         df = pd.DataFrame(packet_details_list)
-        excel_file_path = './udp_details_attack_email.xlsx'
+        excel_file_path = './udp_details_attack_telegram.xlsx'
         df.to_excel(excel_file_path, index=False)
-        print(f'Data saved to {excel_file_path}')
+        logging.info(f'Data saved to {excel_file_path}')
 
-        # Send summary email
+        # Plot bandwidth history
+        plot_bandwidth_history(history)
+
+        # Define attachment paths
+        attachment_paths = [excel_file_path, './static/bandwidth_chart.png']
+
+        # Send summary via Telegram
         if udp_flood_count > 0:
-            subject = 'UDP Flood Summaries'
-            body = (f'Total UDP Floods Detected: {udp_flood_count} from total captured packets: {total_captured_packets}.'
-                    '\nWe attach the detail in Excel format.\nTake action immediately!')
-            send_email(subject, body, attachment_path=[excel_file_path, './static/bandwidth_chart.png'])
+            subject = '🚨 UDP Flood Alert!'
+            body = (f"**Total UDP Floods Detected:** {udp_flood_count}\n"
+                    f"**Total Captured Packets:** {total_captured_packets}\n"
+                    "Please find the attached details and bandwidth chart.\n"
+                    "Take immediate action!")
+            send_telegram(subject, body, attachment_paths=attachment_paths)
         else:
-            print(f'Total UDP Floods Detected: {udp_flood_count} from total captured packets: {total_captured_packets}.\nThe system is safe!')
+            subject = '✅ Network Status: All Clear'
+            body = (f"**Total UDP Floods Detected:** {udp_flood_count}\n"
+                    f"**Total Captured Packets:** {total_captured_packets}\n"
+                    "The system is safe!")
+            send_telegram(subject, body, attachment_paths=attachment_paths)
     except Exception as e:
-        print(f"Error during capture: {e}")
+        logging.error(f"Error during capture: {e}")
     finally:
         capture.close()  # Ensure the capture is properly closed
-        print('Capture complete')   
-        
-        
+        logging.info('Capture complete')   
+
 @app.route('/')
 def index():
     return render_template('index.html', capture_running=capture_running, history=history, packet_details_list=packet_details_list)
@@ -248,17 +356,17 @@ def stop_capture():
     if capture_thread is not None:
         capture_thread.join(timeout=10)  # Wait at most 10 seconds
         if capture_thread.is_alive():
-            print("Capture thread did not terminate timely.")
+            logging.warning("Capture thread did not terminate timely.")
     if bandwidth_thread is not None:
         bandwidth_thread.join(timeout=10)  # Wait at most 10 seconds
         if bandwidth_thread.is_alive():
-            print("Bandwidth thread did not terminate timely.")
+            logging.warning("Bandwidth thread did not terminate timely.")
     plot_bandwidth_history(history)
     return redirect(url_for('index'))
 
 @app.route('/download_excel')
 def download_excel():
-    excel_file_path = './udp_details_attack_email.xlsx'
+    excel_file_path = './udp_details_attack_telegram.xlsx'
     if os.path.exists(excel_file_path):
         return send_file(excel_file_path, as_attachment=True)
     else:
